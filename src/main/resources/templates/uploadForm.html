@@ -1,0 +1,140 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<title>Document Merger</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"></link>
+    <!-- Optional Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous"></link>
+    
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    
+    <!-- angular -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.20/angular-animate.min.js"></script>
+    
+    <!-- loadingbar -->
+    <script type="text/javascript" th:src="@{/js/lib/loading-bar.js}"></script>
+    <link rel="stylesheet" type="text/css" href="/css/loading-bar.css"/>
+    
+    <script type="text/javascript" th:src="@{/js/lib/sortable.js}"></script>
+
+    
+    <script type="text/javascript" th:src="@{/js/src/uploadForm.js}"></script>
+	<!-- <script type="text/javascript" th:src="@{/js/lib/angular.js}"></script> -->
+	<link rel="stylesheet" type="text/css" href="/css/merger.css"/>
+	
+	<link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet"/>
+
+</head>
+<body ng-app="uploadForm">
+
+	<div class="container" ng-controller="uploadFormCntrl">
+ 		<div id ="errorPane" class="row" th:if="${errorMessage} != null">
+        	<div class="col-md-2"></div>
+			<div  class="col-md-8">
+				<div class="alert alert-danger fade in">
+					<a href="#" class="close" data-dismiss="alert">&times;</a>
+					<span class="merger-text" th:text="${errorMessage}"></span>
+				</div>
+			</div>
+        	<div class="col-md-2"></div>
+	    </div>
+	    <div class="row" ng-show="cookieEnabled">
+        	<div class="col-md-2"></div>
+            <div class="col-md-8">
+            	<pre class="merger-text steps"> 1. Select Files To Be Merged (Press CTRL for multiple files Select) </pre>  
+				<form method="POST" enctype="multipart/form-data" action="/">
+					<files-upload-directive clearUploadedFiles="clear()" ></files-upload-directive>
+	            </form>
+	        </div>
+        	<div class="col-md-2"></div>
+	    </div>
+	     <div class="row" ng-show="files.length > 0 &amp;&amp; cookieEnabled">
+        	<div class="col-md-2"></div>
+			<div class="col-md-8">
+			    <pre class="merger-text steps"> 2. Re-order The Files (If Required)</pre>
+			</div>
+        	<div class="col-md-2"></div>
+	    </div>
+	    <form ng-submit="merge()">
+		    <div class="row" ng-show="cookieEnabled">
+		        <div class="col-md-2"></div>
+				<div class="col-md-8 pre-scrollable" ng-show="files.length > 0" >
+			    	<ul ui-sortable="sortableOptions" ng-model="files" class="list">
+			        	<li ng-repeat="item in files" class="item">
+				        		<div style="display:inline-block;" align="left">
+					        		<div class="glyphicon glyphicon-resize-vertical"></div> 
+					        		<div class="fileName truncate" style="display:inline-block;" title="{{item.fileText}}">{{item.fileText}}</div>
+					        		<a href="{{item.fileLink}}" title="Download {{item.fileText}}"> <span class='glyphicon glyphicon-download-alt'></span></a> 
+				        		</div>
+				        		
+			        	</li>
+			    	</ul>
+			    	<input type="hidden" ng-model="mergeRequest.filesData" />
+			    	<span th:text="${sessionId}" id="sessionIdText" style="display: none;"> </span>
+			    	<input type="hidden" name="sessionId" ng-model="mergeRequest.sourceFolderName"/>
+			    	<span th:text="${PDFIFIER_URL}" id="PDFIFIER_URL" style="display: none;"> </span>
+			    	<span th:text="${allowedFileUploadTypes}" id="allowedFileUploadTypes" style="display: none;"> </span>
+			    	<span th:text="${maxFileSizes}" id="maxFileSizes" style="display: none;"> </span>
+				</div>
+				<div class="col-md-2"></div>
+			</div>
+			<br/>
+		    <div class="row" ng-show="files.length > 0 &amp;&amp; cookieEnabled">
+			    <div class="col-md-2"></div>
+			    <div class="col-md-8 checkbox">
+			    	<pre class="merger-text steps"> 3. Select From The Options Below (If Required) </pre>  
+			    	<label class="merger-text"><input type="checkbox" ng-model="mergeRequest.isFooter"> Footer Numbering </input></label>
+			    </div>
+			    <div class="col-md-2"></div>
+			</div>
+		    <div class="row" ng-show="files.length > 0 &amp;&amp; cookieEnabled">
+			    <div class="col-md-2"></div>
+			    <div class="col-md-8 checkbox">
+			    	<label class="merger-text"><input type="checkbox" ng-model="mergeRequest.isIndex"> Index Page </input></label>
+			    </div>
+			    <div class="col-md-2"></div>
+			</div>
+		    <div class="row" ng-show="files.length > 0 &amp;&amp; cookieEnabled">
+			    <div class="col-md-2"></div>
+			    <div class="col-md-8">
+			        <pre class="merger-text steps"> 4. Select The Required Action</pre>  
+				    <button type="submit" class="btn btn-primary" ng-disabled="isMergeBtnDisabled"><span class='glyphicon glyphicon-compressed button-icon-margin'></span> MERGE</button>
+					<button type="button" class="btn btn-primary" ng-click="clear()" ng-disabled="isClearBtnDisabled"><span class='glyphicon glyphicon-trash button-icon-margin'></span> CLEAR</button>
+				    <button type="button" class="btn btn-primary" ng-disabled="isDownloadBtnDisabled" onClick="window.location.href='/files/merged.pdf'">
+				    	<span class='glyphicon glyphicon-download button-icon-margin'></span> DOWNLOAD
+				    </button>
+				    <!-- Enable To See the Json Message That Will Be Sent To Pdfifier-->
+				    <!-- <br/><br/><pre> {{mergeRequest | json}} </pre> -->
+			    </div>
+			    <div class="col-md-2"></div>
+			</div>
+		</form>
+		<div class="row" ng-show="!cookieEnabled">
+        	<div class="col-md-1"></div>
+			<div  class="col-md-10">
+				<div class="alert alert-danger fade in">
+					<a href="#" class="close" data-dismiss="alert">&times;</a>
+					<span class="merger-text" >Warning: Cookies are disabled in you browser! This application will not Function properly.</span>
+				</div>
+			</div>
+        	<div class="col-md-1"></div>
+	    </div>
+	</div>
+
+<!-- <div>
+	<ul>
+		<li th:each="file : ${files}">
+			<a th:href="${file}" th:text="${file}" />
+		</li>
+	</ul>
+</div> -->
+
+</body>
+
+</html>
